@@ -345,7 +345,7 @@ VoidPay/
 
 ## Demo Video
 
-Watch here: <paste your video link (Drive / YouTube)>
+Watch here: https://youtu.be/9ucMzwNW8b4
 
 ---
 
