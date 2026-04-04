@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plans — VoidPay</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="bg-blob blob1"></div>
+  <div class="bg-blob blob2"></div>
+  <div class="bg-blob blob3"></div>
+
+  <nav>
+    <a href="index.html" class="nav-logo">✦ VoidPay</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="plans.html">Plans</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="dashboard.html" class="btn btn-ghost" id="dash-btn" style="display:none;">Dashboard</a>
+      <a href="login.html" class="btn btn-primary" id="login-btn">Login</a>
+    </div>
+  </nav>
+
+  <div class="plans-wrapper">
+
+    <div style="text-align:center;">
+      <div class="badge badge-pink" style="margin-bottom:20px;">✦ Insurance Plans</div>
+      <h1 class="section-title">Choose Your <span class="grad">Coverage</span></h1>
+      <p style="color:var(--text-muted);max-width:500px;margin:0 auto 16px;font-size:0.95rem;line-height:1.7;">
+        Dynamic premiums powered by real-time risk assessment. Upgrade or downgrade anytime.
+      </p>
+    </div>
+
+    <!-- Toggle -->
+    <div style="display:flex;justify-content:center;gap:0;margin:32px 0 8px;background:rgba(255,255,255,0.05);border-radius:50px;padding:4px;width:fit-content;margin-left:auto;margin-right:auto;">
+      <button class="btn" id="toggle-weekly" onclick="setFreq('weekly')" style="border-radius:50px;padding:8px 24px;font-size:0.85rem;">Weekly</button>
+      <button class="btn" id="toggle-monthly" onclick="setFreq('monthly')" style="border-radius:50px;padding:8px 24px;font-size:0.85rem;">Monthly</button>
+    </div>
+
+    <div class="plans-grid">
+
+      <!-- BASIC -->
+      <div class="card plan-card plan-basic" id="plan-basic" onclick="selectPlan('basic')">
+        <div class="selected-tick">✓</div>
+        <div class="plan-tag">Basic</div>
+        <div class="plan-price" id="price-basic">₹49</div>
+        <div class="plan-period" id="period-basic">per week · billed weekly</div>
+        <div class="plan-name">Starter Shield</div>
+        <div class="plan-desc">Essential coverage for light-duty gig workers with moderate exposure.</div>
+        <ul class="plan-features">
+          <li>Real-time AQI risk monitoring</li>
+          <li>Basic ML risk classification</li>
+          <li>₹200 payout on Medium risk</li>
+          <li>Email alerts</li>
+          <li>Manual dashboard refresh</li>
+        </ul>
+        <button class="btn btn-outline btn-full plan-select-btn">Select Basic</button>
+      </div>
+
+      <!-- MID -->
+      <div class="card plan-card plan-mid" id="plan-mid" onclick="selectPlan('pro')">
+        <div class="selected-tick">✓</div>
+        <div class="plan-tag">Most Popular ★</div>
+        <div class="plan-price" id="price-mid">₹89</div>
+        <div class="plan-period" id="period-mid">per week · billed weekly</div>
+        <div class="plan-name">Pro Shield</div>
+        <div class="plan-desc">Full-featured coverage for daily riders and delivery professionals.</div>
+        <ul class="plan-features">
+          <li>Everything in Basic</li>
+          <li>₹400 auto-payout on High risk</li>
+          <li>60s live dashboard refresh</li>
+          <li>Push + SMS notifications</li>
+          <li>Weather & rain coverage</li>
+          <li>Priority claim processing</li>
+        </ul>
+        <button class="btn btn-primary btn-full plan-select-btn">Select Pro</button>
+      </div>
+
+      <!-- HIGH -->
+      <div class="card plan-card plan-high" id="plan-high" onclick="selectPlan('elite')">
+        <div class="selected-tick">✓</div>
+        <div class="plan-tag">Elite</div>
+        <div class="plan-price" id="price-high">₹149</div>
+        <div class="plan-period" id="period-high">per week · billed weekly</div>
+        <div class="plan-name">Elite Shield</div>
+        <div class="plan-desc">Maximum protection for high-frequency gig workers in polluted metros.</div>
+        <ul class="plan-features">
+          <li>Everything in Pro</li>
+          <li>₹800 payout on High risk</li>
+          <li>Family add-on coverage</li>
+          <li>Dedicated account manager</li>
+          <li>Income replacement benefit</li>
+          <li>Annual health checkup</li>
+          <li>Zero waiting period</li>
+        </ul>
+        <button class="btn btn-secondary btn-full plan-select-btn">Select Elite</button>
+      </div>
+
+    </div>
+
+    <!-- Comparison -->
+    <div style="margin-top:64px;">
+      <h3 style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;text-align:center;margin-bottom:32px;">
+        Full Feature Comparison
+      </h3>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.87rem;">
+          <thead>
+            <tr style="background:rgba(250,91,210,0.08);">
+              <th style="padding:16px 24px;text-align:left;font-weight:700;">Feature</th>
+              <th style="padding:16px;text-align:center;color:#F8A2E8;">Basic</th>
+              <th style="padding:16px;text-align:center;color:#FA5BD2;">Pro</th>
+              <th style="padding:16px;text-align:center;color:#ED95DD;">Elite</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06);">
+              <td style="padding:14px 24px;color:var(--text-muted);">AQI Monitoring</td>
+              <td style="text-align:center;">✓</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);">
+              <td style="padding:14px 24px;color:var(--text-muted);">Auto Payout</td>
+              <td style="text-align:center;color:var(--text-muted);">—</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06);">
+              <td style="padding:14px 24px;color:var(--text-muted);">Live Refresh (60s)</td>
+              <td style="text-align:center;color:var(--text-muted);">—</td><td style="text-align:center;">✓</td><td style="text-align:center;">✓</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);">
+              <td style="padding:14px 24px;color:var(--text-muted);">Max Payout</td>
+              <td style="text-align:center;">₹200</td><td style="text-align:center;">₹400</td><td style="text-align:center;">₹800</td>
+            </tr>
+            <tr style="border-top:1px solid rgba(255,255,255,0.06);">
+              <td style="padding:14px 24px;color:var(--text-muted);">Family Coverage</td>
+              <td style="text-align:center;color:var(--text-muted);">—</td><td style="text-align:center;color:var(--text-muted);">—</td><td style="text-align:center;">✓</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    let freq = 'weekly';
+
+    const prices = {
+      weekly:  { basic: '₹49', mid: '₹89', high: '₹149' },
+      monthly: { basic: '₹179', mid: '₹319', high: '₹529' }
+    };
+
+    function setFreq(f) {
+      freq = f;
+      document.getElementById('toggle-weekly').style.background = f === 'weekly' ? 'linear-gradient(135deg,#FA5BD2,#C532EA)' : 'transparent';
+      document.getElementById('toggle-weekly').style.color = f === 'weekly' ? '#fff' : 'var(--text-muted)';
+      document.getElementById('toggle-monthly').style.background = f === 'monthly' ? 'linear-gradient(135deg,#FA5BD2,#C532EA)' : 'transparent';
+      document.getElementById('toggle-monthly').style.color = f === 'monthly' ? '#fff' : 'var(--text-muted)';
+
+      document.getElementById('price-basic').textContent = prices[f].basic;
+      document.getElementById('price-mid').textContent = prices[f].mid;
+      document.getElementById('price-high').textContent = prices[f].high;
+
+      const period = f === 'weekly' ? 'per week · billed weekly' : 'per month · billed monthly';
+      document.getElementById('period-basic').textContent = period;
+      document.getElementById('period-mid').textContent = period;
+      document.getElementById('period-high').textContent = period;
+    }
+
+    setFreq('weekly');
+
+    function selectPlan(plan) {
+      ['basic','pro','elite'].forEach(p => {
+        const el = document.getElementById('plan-' + (p === 'pro' ? 'mid' : p === 'elite' ? 'high' : 'basic'));
+        if (el) el.classList.remove('active');
+      });
+
+      const map = { basic: 'plan-basic', pro: 'plan-mid', elite: 'plan-high' };
+      document.getElementById(map[plan]).classList.add('active');
+
+      // Save to user
+      const user = JSON.parse(localStorage.getItem('gigshield_user') || '{}');
+      if (user.email) {
+        user.plan = plan;
+        localStorage.setItem('gigshield_user', JSON.stringify(user));
+        // Update in users array
+        const users = JSON.parse(localStorage.getItem('gigshield_users') || '[]');
+        const idx = users.findIndex(u => u.email === user.email);
+        if (idx > -1) { users[idx].plan = plan; localStorage.setItem('gigshield_users', JSON.stringify(users)); }
+      }
+
+      setTimeout(() => window.location.href = 'dashboard.html', 600);
+    }
+
+    // Highlight current plan
+    window.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(localStorage.getItem('gigshield_user') || 'null');
+      if (user) {
+        document.getElementById('dash-btn').style.display = 'inline-flex';
+        document.getElementById('login-btn').textContent = 'Dashboard';
+        document.getElementById('login-btn').href = 'dashboard.html';
+
+        const map = { basic: 'plan-basic', pro: 'plan-mid', elite: 'plan-high' };
+        if (map[user.plan]) document.getElementById(map[user.plan]).classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>

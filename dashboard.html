@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — VoidPay</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+
+    @media(max-width:900px) {
+      .dash-grid { grid-template-columns: 1fr 1fr; }
+      .span-2 { grid-column: span 2; }
+      .span-3 { grid-column: span 2; }
+    }
+    @media(max-width:600px) {
+      .dash-grid { grid-template-columns: 1fr; }
+      .span-2, .span-3 { grid-column: span 1; }
+    }
+
+    .aqi-gauge {
+      position: relative;
+      width: 140px; height: 70px;
+      margin: 16px auto 8px;
+    }
+    .gauge-bg {
+      width: 140px; height: 70px;
+      border-radius: 70px 70px 0 0;
+      background: conic-gradient(
+        #4ade80 0deg 72deg,
+        #fbbf24 72deg 144deg,
+        #fb923c 144deg 180deg,
+        transparent 180deg
+      );
+      opacity: 0.25;
+      position: absolute; top: 0; left: 0;
+    }
+    .gauge-needle {
+      position: absolute;
+      bottom: 0; left: 50%;
+      width: 3px; height: 60px;
+      background: linear-gradient(to top, #FA5BD2, transparent);
+      border-radius: 3px;
+      transform-origin: bottom center;
+      transition: transform 1s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    .gauge-center {
+      position: absolute; bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      width: 14px; height: 14px; border-radius: 50%;
+      background: linear-gradient(135deg, #FA5BD2, #C532EA);
+    }
+
+    .predict-section {
+      padding: 28px;
+      margin-top: 20px;
+    }
+
+    .predict-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .predict-result {
+      padding: 20px;
+      border-radius: 14px;
+      text-align: center;
+      margin-top: 16px;
+      display: none;
+    }
+
+    .rain-toggle {
+      display: flex; gap: 8px;
+    }
+    .rain-btn {
+      flex: 1; padding: 12px;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted); cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.87rem; transition: all 0.2s;
+    }
+    .rain-btn.active {
+      background: rgba(250,91,210,0.15);
+      border-color: rgba(250,91,210,0.4);
+      color: var(--pink-light);
+    }
+
+    .history-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.84rem;
+    }
+    .history-item:last-child { border-bottom: none; }
+
+    .user-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, #FA5BD2, #C532EA);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 1rem; color: #fff; flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-blob blob1"></div>
+  <div class="bg-blob blob2"></div>
+  <div class="bg-blob blob3"></div>
+
+  <!-- Notification -->
+  <div class="notification" id="notification">
+    <div class="notif-icon">⚠️</div>
+    <div>
+      <div class="notif-title">High Risk Detected!</div>
+      <div class="notif-msg" id="notif-msg">Insurance payout has been triggered automatically.</div>
+    </div>
+    <button class="notif-close" onclick="closeNotif()">✕</button>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-logo">✦ VoidPay</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="plans.html">Plans</a></li>
+      <li><a href="dashboard.html" style="color:var(--pink-light);">Dashboard</a></li>
+    </ul>
+    <div class="nav-actions" style="align-items:center;gap:12px;">
+      <div style="font-size:0.82rem;color:var(--text-muted);" id="nav-user"></div>
+      <a href="plans.html" class="btn btn-ghost">Upgrade</a>
+      <button class="btn btn-primary" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="dashboard-wrapper">
+
+    <!-- Header -->
+    <div class="dash-header">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div class="dash-greeting">
+          <h1 id="greeting">Good morning, User</h1>
+          <p id="user-plan-label">Pro Plan · Delhi</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="font-size:0.78rem;color:var(--text-muted);">
+          Auto-refresh in <span id="countdown" style="color:var(--pink-light);font-weight:700;">60s</span>
+        </div>
+        <div class="refresh-bar" style="width:120px;">
+          <div class="refresh-fill" id="refresh-fill" style="width:100%;"></div>
+        </div>
+        <button class="btn btn-outline" onclick="fetchDashboard(true)">
+          ↻ Refresh Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dash-grid">
+
+      <!-- RISK CARD (span 2) -->
+      <div class="card dash-card span-2" id="risk-card" style="position:relative;">
+        <div class="loading-overlay" id="risk-loading">
+          <div class="spinner"></div>
+        </div>
+
+        <div class="dash-card-label"><div class="dot"></div> Risk Assessment</div>
+
+        <div class="risk-display">
+          <div class="risk-circle" id="risk-circle">—</div>
+          <div>
+            <div class="risk-info" id="risk-info">
+              <h2 id="risk-level-text">Loading…</h2>
+              <p id="risk-desc">Fetching real-time environmental data</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="risk-bar-wrap">
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:8px;">
+            <span>Low</span><span>Medium</span><span>High</span>
+          </div>
+          <div class="risk-bar-bg">
+            <div class="risk-bar-fill" id="risk-bar"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;" id="risk-tags">
+          <span class="badge badge-pink">🔄 Auto-monitoring active</span>
+        </div>
+      </div>
+
+      <!-- CITY CARD -->
+      <div class="card dash-card">
+        <div class="dash-card-label"><div class="dot"></div> Location</div>
+        <div class="city-display">
+          <div class="city-icon">🏙️</div>
+          <div class="city-name" id="city-name">—</div>
+        </div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;">Active monitoring zone</div>
+
+        <div class="aqi-gauge">
+          <div class="gauge-bg"></div>
+          <div class="gauge-needle" id="gauge-needle"></div>
+          <div class="gauge-center"></div>
+        </div>
+        <div style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:8px;">AQI Gauge</div>
+
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;justify-content:space-between;font-size:0.82rem;">
+            <span style="color:var(--text-muted);">AQI Value</span>
+            <span id="aqi-val" style="font-weight:700;color:var(--pink-light);">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENV DATA -->
+      <div class="card dash-card">
+        <div class="dash-card-label"><div class="dot"></div> Environmental Data</div>
+        <div class="env-stats">
+          <div class="env-item">
+            <div class="env-item-label">🌡️ Temperature</div>
+            <div class="env-item-val" id="env-temp">—</div>
+          </div>
+          <div class="env-item">
+            <div class="env-item-label">🌧️ Rain</div>
+            <div class="env-item-val" id="env-rain">—</div>
+          </div>
+          <div class="env-item">
+            <div class="env-item-label">⏱ Duration</div>
+            <div class="env-item-val" id="env-duration">—</div>
+          </div>
+          <div class="env-item">
+            <div class="env-item-label">🕐 Time</div>
+            <div class="env-item-val" id="env-time">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREMIUM CARD -->
+      <div class="card dash-card">
+        <div class="dash-card-label"><div class="dot"></div> Premium & Payout</div>
+        <div class="premium-amount" id="premium-amount">₹—</div>
+        <div class="premium-period">Current weekly premium</div>
+
+        <div class="payout-row">
+          <div>
+            <div class="payout-label">Last Auto-Payout</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;" id="payout-time">—</div>
+          </div>
+          <div class="payout-val" id="payout-amount">—</div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <a href="plans.html" class="btn btn-outline btn-full" style="font-size:0.82rem;padding:10px 16px;">
+            Manage Plan →
+          </a>
+        </div>
+      </div>
+
+      <!-- MONITORING -->
+      <div class="card dash-card">
+        <div class="dash-card-label"><div class="dot"></div> Monitoring Status</div>
+        <div class="status-row">
+          <div class="status-pulse"></div>
+          <div class="status-text" id="status-text">Active — Live</div>
+        </div>
+
+        <div class="monitor-items">
+          <div class="monitor-item">
+            <span class="monitor-item-label">📡 Data Source</span>
+            <span class="monitor-item-val">OpenWeather API</span>
+          </div>
+          <div class="monitor-item">
+            <span class="monitor-item-label">🔄 Interval</span>
+            <span class="monitor-item-val">60 seconds</span>
+          </div>
+          <div class="monitor-item">
+            <span class="monitor-item-label">🤖 Model</span>
+            <span class="monitor-item-val">risk_model.pkl</span>
+          </div>
+          <div class="monitor-item">
+            <span class="monitor-item-label">⏱ Last Update</span>
+            <span class="monitor-item-val" id="last-update">—</span>
+          </div>
+          <div class="monitor-item">
+            <span class="monitor-item-label">📋 Checks Today</span>
+            <span class="monitor-item-val" id="checks-today">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MANUAL PREDICT (span 3) -->
+      <div class="card predict-section span-3">
+        <div class="dash-card-label"><div class="dot"></div> Manual Risk Test — /predict API</div>
+        <p style="font-size:0.84rem;color:var(--text-muted);margin-bottom:20px;">Override live data and test the ML model with custom parameters.</p>
+
+        <div class="predict-grid">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>AQI</label>
+            <input type="number" id="p-aqi" placeholder="0–500" value="250" />
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Temperature (°C)</label>
+            <input type="number" id="p-temp" placeholder="e.g. 32" value="32" />
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Duration (hrs)</label>
+            <input type="number" id="p-duration" placeholder="1–8" value="3" />
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Time of Day (0–3)</label>
+            <input type="number" id="p-time" placeholder="0–3" value="2" min="0" max="3" />
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Rain</label>
+            <div class="rain-toggle">
+              <button class="rain-btn active" id="rain-no" onclick="setRain(0)">☀ No</button>
+              <button class="rain-btn" id="rain-yes" onclick="setRain(1)">🌧 Yes</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="manualPredict()">
+          🤖 Run Prediction
+        </button>
+
+        <div class="predict-result" id="predict-result"></div>
+      </div>
+
+      <!-- HISTORY (span 3) -->
+      <div class="card dash-card span-3">
+        <div class="dash-card-label"><div class="dot"></div> Recent Activity</div>
+        <div id="history-list">
+          <div style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:16px;">
+            Monitoring history will appear here as data loads…
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+const API_BASE = 'http://localhost:8000';
+let rainVal = 0;
+let checksToday = 0;
+let history = [];
+let countdownVal = 60;
+
+// Auth check
+window.addEventListener('DOMContentLoaded', () => {
+  const user = JSON.parse(localStorage.getItem('gigshield_user') || 'null');
+  if (!user) { window.location.href = 'login.html'; return; }
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  document.getElementById('greeting').textContent = `${greeting}, ${user.name || 'User'}`;
+  document.getElementById('user-avatar').textContent = (user.name || 'U')[0].toUpperCase();
+  document.getElementById('nav-user').textContent = user.name || '';
+
+  fetchDashboard(true);
+  startCountdown();
+});
+
+function logout() {
+  localStorage.removeItem('gigshield_user');
+  window.location.href = 'login.html';
+}
+
+// ── FETCH DASHBOARD ──
+async function fetchDashboard(showLoader = false) {
+  if (showLoader) document.getElementById('risk-loading').style.display = 'flex';
+
+  try {
+    const user = JSON.parse(localStorage.getItem('gigshield_user') || '{}');
+    const city = user.city || 'delhi';
+
+    console.log("Calling API for:", city);
+
+    const res = await fetch(`${API_BASE}/dashboard?city=${city}`);
+    if (!res.ok) throw new Error('API error');
+
+    const data = await res.json();
+    console.log("API DATA:", data);
+
+    renderDashboard(data);
+
+  } catch (e) {
+    const demo = buildDemoData();
+    renderDashboard(demo);
+    console.warn('Backend not reachable:', e.message);
+  } finally {
+    document.getElementById('risk-loading').style.display = 'none';
+    checksToday++;
+    document.getElementById('checks-today').textContent = checksToday;
+    document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+  }
+}
+
+// DEMO DATA
+function buildDemoData() {
+  const aqi = Math.floor(Math.random() * 350) + 100;
+  const temp = Math.floor(Math.random() * 15) + 28;
+  const rain = Math.random() > 0.7 ? 1 : 0;
+
+  let risk = 'Low';
+  if (aqi > 300) risk = 'High';
+  else if (aqi > 200) risk = 'Medium';
+
+  let prem = 50 + (risk === 'High' ? 70 : risk === 'Medium' ? 30 : 0) + (rain ? 10 : 0);
+
+  return {
+    City: 'Delhi',
+    AQI: aqi,
+    Risk: risk,
+    Premium: prem,
+    Payout: risk === 'High' ? 400 : null,
+    Status: 'Monitoring'
+  };
+}
+
+// ── RENDER DASHBOARD ──
+function renderDashboard(data) {
+  const user = JSON.parse(localStorage.getItem('gigshield_user') || '{}');
+
+  // ✅ FIXED: CITY NOW COMES FROM API
+  document.getElementById('user-plan-label').textContent =
+    `${user.plan || 'Basic'} Plan · ${data.City}`;
+
+  const risk = data.Risk || 'Low';
+  const rClass = risk.toLowerCase();
+
+  document.getElementById('risk-circle').className = `risk-circle ${rClass}`;
+  document.getElementById('risk-circle').textContent = risk;
+
+  document.getElementById('risk-level-text').textContent = `${risk} Risk`;
+
+  document.getElementById('city-name').textContent = data.City || '—';
+  document.getElementById('aqi-val').textContent = data.AQI || '—';
+
+  const aqi = data.AQI || 0;
+  const angle = Math.min(90, Math.max(-90, (aqi / 500) * 180 - 90));
+  document.getElementById('gauge-needle').style.transform = `rotate(${angle}deg)`;
+
+  document.getElementById('premium-amount').textContent =
+    data.Premium ? `₹${data.Premium}` : '₹—';
+
+  if (data.Payout) {
+    document.getElementById('payout-amount').textContent = `₹${data.Payout}`;
+    document.getElementById('payout-time').textContent = new Date().toLocaleTimeString();
+  }
+
+  if (risk === 'High') {
+    document.getElementById('notif-msg').textContent =
+      `AQI ${data.AQI} detected in ${data.City}. ₹${data.Payout || 400} payout triggered.`;
+    showNotif();
+  }
+}
+
+// ── COUNTDOWN ──
+function startCountdown() {
+  countdownVal = 60;
+  updateFill();
+
+  const interval = setInterval(() => {
+    countdownVal--;
+    document.getElementById('countdown').textContent = countdownVal + 's';
+    updateFill();
+
+    if (countdownVal <= 0) {
+      clearInterval(interval);
+      fetchDashboard(false);
+      setTimeout(startCountdown, 500);
+    }
+  }, 1000);
+}
+
+function updateFill() {
+  const pct = (countdownVal / 60) * 100;
+  document.getElementById('refresh-fill').style.width = pct + '%';
+}
+
+// NOTIFICATIONS
+function showNotif() {
+  document.getElementById('notification').classList.add('show');
+  setTimeout(closeNotif, 8000);
+}
+
+function closeNotif() {
+  document.getElementById('notification').classList.remove('show');
+}
+</script>
+</body>
+</html>
