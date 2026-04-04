@@ -13,6 +13,16 @@ app = FastAPI()
 # Load ML model
 model = joblib.load("risk_model.pkl")
 
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow headers=["*"1,
+                   )
 # Simulated user data
 user_data = {
     "city": "delhi",
